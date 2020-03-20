@@ -31,11 +31,8 @@ type Options struct {
 }
 
 func ParseOptions() (Options, error) {
-	combineSessions := strings.Split(*flag.String("combine-sessions", "", "combine multi session files, sep by ','"), ",")
-	for i := range combineSessions {
-		combineSessions[i] = strings.TrimSpace(combineSessions[i])
-	}
-
+	var combineSessions []string
+	combflag := flag.String("combine-sessions", "", "combine multi session files, sep by ','")
 	options := Options{
 		Threads:             flag.Int("threads", 0, "Number of concurrent threads (default number of logical CPUs)"),
 		OutDir:              flag.String("out", ".", "Directory to write files to"),
@@ -52,7 +49,7 @@ func ParseOptions() (Options, error) {
 		HTTPTimeout:         flag.Int("http-timeout", 3*1000, "Timeout in miliseconds for HTTP requests"),
 		ScreenshotTimeout:   flag.Int("screenshot-timeout", 30*1000, "Timeout in miliseconds for screenshots"),
 		Nmap:                flag.Bool("nmap", false, "Parse input as Nmap/Masscan XML"),
-		GenReport:           flag.Bool("gen-report", true, "Generate report file"),
+		GenReport:           flag.Bool("report", true, "Generate report file"),
 		SaveBody:            flag.Bool("save-body", true, "Save response bodies to files"),
 		Silent:              flag.Bool("silent", false, "Suppress all output except for errors"),
 		ClusterSimilar:      flag.Bool("similar", true, "Cluster page similarity"),
@@ -60,6 +57,16 @@ func ParseOptions() (Options, error) {
 		Version:             flag.Bool("version", false, "Print current Aquatone version"),
 	}
 	flag.Parse()
+
+	// 必须parse之后执行
+	if *combflag == "" {
+		combineSessions = nil
+	} else {
+		combineSessions = strings.Split(*combflag, ",")
+		for i := range combineSessions {
+			combineSessions[i] = strings.TrimSpace(combineSessions[i])
+		}
+	}
 
 	return options, nil
 }

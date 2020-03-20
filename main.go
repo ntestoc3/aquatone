@@ -44,6 +44,7 @@ func hasSupportedScheme(s string) bool {
 }
 
 func parseSessionFile(filepath string) (*core.Session, error) {
+	sess.Out.Important("Parse session file:%s.\n", filepath)
 	outSess := new(core.Session)
 	jsonSession, err := ioutil.ReadFile(filepath)
 	if err != nil {
@@ -58,7 +59,7 @@ func parseSessionFile(filepath string) (*core.Session, error) {
 
 func calcPageStru(sess *core.Session) {
 	sess.Out.Important("Calculating page structures...")
-	f, _ := os.OpenFile(sess.GetFilePath("aquatone_urls.txt"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, _ := os.OpenFile(sess.GetFilePath("aquatone_urls.txt"), os.O_CREATE|os.O_WRONLY, 0644)
 	for _, page := range sess.Pages {
 		filename := sess.GetFilePath(fmt.Sprintf("html/%s.html", page.BaseFilename()))
 		body, err := os.Open(filename)
@@ -103,7 +104,7 @@ func clusterSimilarPages(sess *core.Session) {
 }
 
 func genReport(sess *core.Session) {
-	sess.Out.Important("Generating HTML report...")
+	sess.Out.Important("Generating HTML report...\n")
 	var template []byte
 	if *sess.Options.TemplatePath != "" {
 		template, err = ioutil.ReadFile(*sess.Options.TemplatePath)
@@ -131,7 +132,7 @@ func genReport(sess *core.Session) {
 }
 
 func saveSession(sess *core.Session) {
-	sess.Out.Important("Writing session file...")
+	sess.Out.Important("Writing session file...\n")
 	err = sess.SaveToFile(*sess.Options.SessionFileName)
 	if err != nil {
 		sess.Out.Error("Failed!\n")
@@ -176,8 +177,8 @@ func main() {
 		os.Exit(0)
 	}
 
-	if len(*sess.Options.CombineSessionPaths) > 0 {
-		sess.Out.Info("Combine session:")
+	if *sess.Options.CombineSessionPaths != nil {
+		sess.Out.Info("Combine session:%d\n", len(*sess.Options.CombineSessionPaths))
 		for _, path := range *sess.Options.CombineSessionPaths {
 			tmpSess, err := parseSessionFile(path)
 			if err != nil {
@@ -185,22 +186,19 @@ func main() {
 				os.Exit(1)
 			}
 
-			if err := sess.CombineSession(tmpSess); err != nil {
-				sess.Out.Fatal("Unable to combine session file at %s: %s\n", path, err)
-				os.Exit(1)
-			}
+			sess.CombineSession(tmpSess)
 			sess.Out.Info("Combine session file %s over.\n", path)
-
-			sess.Out.Info("Combine session over!")
-
-			if *sess.Options.ClusterSimilar {
-				calcPageStru(sess)
-				clusterSimilarPages(sess)
-			}
-			if *sess.Options.GenReport {
-				genReport(sess)
-			}
 		}
+
+		sess.Out.Info("Combine session over!\n")
+		if *sess.Options.ClusterSimilar {
+			calcPageStru(sess)
+			clusterSimilarPages(sess)
+		}
+		if *sess.Options.GenReport {
+			genReport(sess)
+		}
+
 		os.Exit(0)
 	}
 
@@ -245,21 +243,24 @@ func main() {
 	sess.EventBus.Publish(core.SessionStart)
 
 	for _, target := range targets {
+		sess.Out.Info("proc taraget:%s\n", target)
 		if isURL(target) {
 			if hasSupportedScheme(target) {
+				sess.Out.Info("publish url:%s\n", target)
 				sess.EventBus.Publish(core.URL, target)
 			}
 		} else {
+			sess.Out.Info("publish Host:%s\n", target)
 			sess.EventBus.Publish(core.Host, target)
 		}
 	}
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(3 * time.Second)
 	sess.EventBus.WaitAsync()
 	sess.WaitGroup.Wait()
 
 	sess.EventBus.Publish(core.SessionEnd)
-	time.Sleep(1 * time.Second)
+	time.Sleep(2 * time.Second)
 	sess.EventBus.WaitAsync()
 	sess.WaitGroup.Wait()
 
@@ -294,5 +295,7 @@ func main() {
 	sess.Out.Info(" - Successful : %v\n", sess.Stats.ScreenshotSuccessful)
 	sess.Out.Info(" - Failed     : %v\n\n", sess.Stats.ScreenshotFailed)
 
-	sess.Out.Important("Wrote HTML report to: %s\n\n", sess.GetFilePath(*sess.Options.ReportFileName))
+	if *sess.Options.GenReport {
+		sess.Out.Important("Wrote HTML report to: %s\n\n", sess.GetFilePath(*sess.Options.ReportFileName))
+	}
 }

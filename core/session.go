@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/asaskevich/EventBus"
+	"github.com/imdario/mergo"
 	"github.com/remeh/sizedwaitgroup"
 )
 
@@ -210,6 +211,21 @@ func (s *Session) initDirectories() {
 			}
 		}
 	}
+}
+
+// 组合session
+func (s *Session) CombineSession(srcS *Session) error {
+	s.Stats.PortOpen += srcS.Stats.PortOpen
+	s.Stats.PortClosed += srcS.Stats.PortClosed
+	s.Stats.RequestSuccessful += srcS.Stats.RequestSuccessful
+	s.Stats.RequestFailed += srcS.Stats.RequestFailed
+	s.Stats.ResponseCode2xx += srcS.Stats.ResponseCode2xx
+	s.Stats.ResponseCode3xx += srcS.Stats.ResponseCode3xx
+	s.Stats.ResponseCode4xx += srcS.Stats.ResponseCode4xx
+	s.Stats.ResponseCode5xx += srcS.Stats.ResponseCode5xx
+	s.Stats.ScreenshotSuccessful += srcS.Stats.ScreenshotSuccessful
+	s.Stats.ScreenshotFailed += srcS.Stats.ScreenshotFailed
+	return mergo.Merge(s.Pages, srcS.Pages, mergo.WithOverride)
 }
 
 func (s *Session) BaseFilenameFromURL(stru string) string {

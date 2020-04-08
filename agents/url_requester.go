@@ -109,7 +109,7 @@ func (a *URLRequester) writeHeaders(page *core.Page) {
 		a.session.Out.Debug("[%s] Error: %v\n", a.ID(), err)
 		a.session.Out.Error("Failed to write HTTP response headers for %s to %s\n", page.URL, a.session.GetFilePath(filepath))
 	}
-	page.HeadersPath = filepath
+	page.HeadersPath = a.session.GetFilePath(filepath)
 }
 
 func (a *URLRequester) writeBody(page *core.Page, resp gorequest.Response) {
@@ -125,5 +125,5 @@ func (a *URLRequester) writeBody(page *core.Page, resp gorequest.Response) {
 		a.session.Out.Debug("[%s] Error: %v\n", a.ID(), err)
 		a.session.Out.Error("Failed to write HTTP response body for %s to %s\n", page.URL, a.session.GetFilePath(filepath))
 	}
-	page.BodyPath = filepath
+	page.BodyPath = a.session.GetFilePath(filepath)
 }

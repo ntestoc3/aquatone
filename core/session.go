@@ -226,6 +226,13 @@ func (s *Session) CombineSession(srcS *Session) {
 	s.Stats.ScreenshotFailed += srcS.Stats.ScreenshotFailed
 	for k, v := range srcS.Pages {
 		s.Pages[k] = v
+		// fix path
+		rel, _ := filepath.Rel(*s.Options.OutDir, v.HeadersPath)
+		s.Pages[k].HeadersPath = rel
+		rel, _ = filepath.Rel(*s.Options.OutDir, v.BodyPath)
+		s.Pages[k].BodyPath = rel
+		rel, _ = filepath.Rel(*s.Options.OutDir, v.ScreenshotPath)
+		s.Pages[k].ScreenshotPath = rel
 	}
 }
 

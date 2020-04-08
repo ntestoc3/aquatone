@@ -199,6 +199,7 @@ func main() {
 			genReport(sess)
 		}
 
+		saveSession(sess)
 		os.Exit(0)
 	}
 

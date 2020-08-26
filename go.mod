@@ -4,7 +4,6 @@ go 1.14
 
 require (
 	github.com/PuerkitoBio/goquery v1.5.1 // indirect
-	github.com/asaskevich/EventBus v0.0.0-20180315140547-d46933a94f05 // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/lair-framework/go-nmap v0.0.0-20191202052157-3507e0b03523 // indirect

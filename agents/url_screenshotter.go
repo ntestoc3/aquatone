@@ -173,7 +173,7 @@ func (a *URLScreenshotter) screenshotPage(page *core.Page) {
 
 	a.session.Stats.IncrementScreenshotSuccessful()
 	a.session.Out.Info("%s: %s\n", page.URL, Green("screenshot successful"))
-	page.ScreenshotPath = a.session.GetFilePath(filePath)
+	page.ScreenshotPath = filePath
 	page.HasScreenshot = true
 	a.killChromeProcessIfRunning(cmd)
 }

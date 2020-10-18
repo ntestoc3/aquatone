@@ -68,7 +68,7 @@ func (a *URLScreenshotter) screenshotPage(page *core.Page) {
 		queryString := u.Query()
 		queryString.Add("--user-agent", RandomUserAgent())
 		queryString.Add("--window-size", *a.session.Options.Resolution)
-		queryString.Add("--ignoreHTTPSErrors", "true")
+		queryString.Add("--ignore-certificate-errors", "true")
 		if *a.session.Options.Proxy != "" {
 			queryString.Add("--proxy-server", *a.session.Options.Proxy)
 		}
@@ -82,9 +82,9 @@ func (a *URLScreenshotter) screenshotPage(page *core.Page) {
 	} else {
 		var opts = append(chromedp.DefaultExecAllocatorOptions[:],
 			chromedp.DisableGPU,
-			chromedp.Flag("--ignore-certificate-errors", true),
-			chromedp.Flag("--window-size=", *a.session.Options.Resolution),
-			chromedp.Flag("--user-agent", RandomUserAgent()),
+			chromedp.Flag("ignore-certificate-errors", true),
+			chromedp.Flag("window-size", *a.session.Options.Resolution),
+			chromedp.Flag("user-agent", RandomUserAgent()),
 		)
 
 		if os.Geteuid() == 0 {
@@ -120,9 +120,10 @@ func (a *URLScreenshotter) screenshotPage(page *core.Page) {
 		a.session.Out.Error("%s: screenshot failed: %s\n", page.URL, err)
 		return
 	}
-	if err := ioutil.WriteFile(filePath, buf, 0644); err != nil {
+	writePath := a.session.GetFilePath(filePath)
+	if err := ioutil.WriteFile(writePath, buf, 0644); err != nil {
 		a.session.Stats.IncrementScreenshotFailed()
-		a.session.Out.Error("%s: screenshot write File %s error: %s\n", page.URL, filePath, err)
+		a.session.Out.Error("%s: screenshot write File %s error: %s\n", page.URL, writePath, err)
 		return
 	}
 

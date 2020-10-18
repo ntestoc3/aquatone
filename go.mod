@@ -3,9 +3,11 @@ module aquatone
 go 1.14
 
 require (
-	github.com/PuerkitoBio/goquery v1.5.1 // indirect
+	github.com/PuerkitoBio/goquery v1.6.0 // indirect
+	github.com/chromedp/cdproto v0.0.0-20201009231348-1c6a710e77de // indirect
+	github.com/chromedp/chromedp v0.5.3 // indirect
 	github.com/fatih/color v1.9.0 // indirect
-	github.com/google/uuid v1.1.1
+	github.com/google/uuid v1.1.2
 	github.com/lair-framework/go-nmap v0.0.0-20191202052157-3507e0b03523 // indirect
 	github.com/michenriksen/aquatone/agents v1.7.0
 	github.com/michenriksen/aquatone/core v1.7.0

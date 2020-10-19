@@ -54,7 +54,7 @@ func (a *URLScreenshotter) OnSessionEnd() {
 }
 
 func (a *URLScreenshotter) screenshotPage(page *core.Page) {
-	filePath := fmt.Sprintf("screenshots/%s.png", page.BaseFilename())
+	filePath := fmt.Sprintf("screenshots/%s.jpg", page.BaseFilename())
 
 	var actx context.Context
 
@@ -106,11 +106,19 @@ func (a *URLScreenshotter) screenshotPage(page *core.Page) {
 	ctx, cancel := context.WithTimeout(nctx, time.Duration(*a.session.Options.ScreenshotTimeout)*time.Millisecond)
 	defer cancel()
 
-	// capture screenshot of an element
+	// capture screenshot
 	var buf []byte
 
-	// capture entire browser viewport, returning png with quality=70
-	if err := chromedp.Run(ctx, fullScreenshot(page.URL, int64(*a.session.Options.ImageQuality), &buf)); err != nil {
+	var x, y int
+	_, err := fmt.Sscanf(*a.session.Options.Resolution, "%d,%d", &x, &y)
+	if err != nil {
+		a.session.Stats.IncrementScreenshotFailed()
+		a.session.Out.Error("%s: screenshot not valid resolution %s\n", page.URL, *a.session.Options.Resolution)
+		return
+	}
+
+	// capture screen, returning jpeg with quality=70
+	if err := chromedp.Run(ctx, screenshot(page.URL, int64(x), int64(y), int64(*a.session.Options.ImageQuality), &buf)); err != nil {
 		a.session.Stats.IncrementScreenshotFailed()
 		a.session.Out.Debug("[%s] Error: %v\n", a.ID(), err)
 		if ctx.Err() == context.DeadlineExceeded {
@@ -131,6 +139,25 @@ func (a *URLScreenshotter) screenshotPage(page *core.Page) {
 	a.session.Out.Info("%s: %s\n", page.URL, Green("screenshot successful"))
 	page.ScreenshotPath = filePath
 	page.HasScreenshot = true
+}
+
+func screenshot(url string, width, height, quality int64, res *[]byte) chromedp.Tasks {
+	return chromedp.Tasks{
+		chromedp.EmulateViewport(width, height),
+		chromedp.Navigate(url),
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			// capture screenshot
+			var err error
+			*res, err = page.CaptureScreenshot().
+				WithQuality(quality).
+				WithFormat(page.CaptureScreenshotFormatJpeg).
+				Do(ctx)
+			if err != nil {
+				return err
+			}
+			return nil
+		}),
+	}
 }
 
 func fullScreenshot(urlstr string, quality int64, res *[]byte) chromedp.Tasks {

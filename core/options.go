@@ -3,6 +3,8 @@ package core
 import (
 	"flag"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -36,6 +38,7 @@ type Options struct {
 func ParseOptions() (Options, error) {
 	var combineSessions []string
 	combflag := flag.String("combine-sessions", "", "combine multi session files, sep by ','")
+	combGlob := flag.String("combine-sessions-glob", "", "combine session file from file glob pattern")
 	options := Options{
 		Threads:             flag.Int("threads", 0, "Number of concurrent threads (default number of logical CPUs)"),
 		ImageQuality:        flag.Int("quality", 70, "Screenshot image quality"),
@@ -71,6 +74,16 @@ func ParseOptions() (Options, error) {
 		combineSessions = strings.Split(*combflag, ",")
 		for i := range combineSessions {
 			combineSessions[i] = strings.TrimSpace(combineSessions[i])
+		}
+	}
+
+	if *combGlob != "" {
+		files, err := filepath.Glob(*combGlob)
+		if err != nil {
+			fmt.Println("error glob session files:%s", err)
+			os.Exit(1)
+		} else {
+			combineSessions = append(combineSessions, files...)
 		}
 	}
 

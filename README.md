@@ -4,8 +4,23 @@ Aquatone is a tool for visual inspection of websites across a large amount of ho
 
 ## Installation
 
-1. Install [Google Chrome](https://www.google.com/chrome/) or [Chromium](https://www.chromium.org/getting-involved/download-chromium) browser -- **Note:** Google Chrome is currently giving unreliable results when running in *headless* mode, so it is recommended to install Chromium for the best results.
-2. Download the [latest release](https://github.com/michenriksen/aquatone/releases/latest) of Aquatone for your operating system.
+1. Install [Google Chrome](https://www.google.com/chrome/) or [Chromium](https://www.chromium.org/getting-involved/download-chromium) browser -- **Note:** Google Chrome is currently giving unreliable results when running in *headless* mode, so it is recommended to install Chromium for the best results. 
+   or use browserless/chrome docker-compose:
+```yml
+version: '3'
+services:
+  browserless:
+    image: browserless/chrome
+    hostname: browserless
+    container_name: chrome
+    ports:
+      - "127.0.0.1:3000:3000"
+```
+  save to docker-compose.yml, start docker
+```sh 
+  docker-compose up -d
+```
+2. Download the [latest release](https://github.com/ntestoc3/aquatone) of Aquatone for your operating system.
 3. Uncompress the zip file and move the `aquatone` binary to your desired location. You probably want to move it to a location in your `$PATH` for easier use.
 
 ### Compiling the source code
@@ -17,8 +32,14 @@ If you for some reason don't trust the pre-compiled binaries, you can also compi
 ### Command-line options:
 
 ```
+  -chrome-dev-tools-url string
+    	When set UseRemoteChrome true, aquatone will use ChromeDevToolsURL to connect chrome dev tools (default "ws://localhost:3000")
   -chrome-path string
     	Full path to the Chrome/Chromium executable to use. By default, aquatone will search for Chrome or Chromium
+  -combine-sessions string
+    	combine multi session files, sep by ','
+  -combine-sessions-glob string
+    	combine session file from file glob pattern
   -debug
     	Print debugging information
   -http-timeout int
@@ -31,6 +52,12 @@ If you for some reason don't trust the pre-compiled binaries, you can also compi
     	Ports to scan on hosts. Supported list aliases: small, medium, large, xlarge (default "80,443,8000,8080,8443")
   -proxy string
     	Proxy to use for HTTP requests
+  -quality int
+    	Screenshot image quality (default 70)
+  -report
+    	Generate report file (default true)
+  -report-out-name string
+    	Generate HTML report filename (default "aquatone_report.html")
   -resolution string
     	screenshot resolution (default "1440,900")
   -save-body
@@ -41,14 +68,24 @@ If you for some reason don't trust the pre-compiled binaries, you can also compi
     	Timeout in miliseconds for screenshots (default 30000)
   -session string
     	Load Aquatone session file and generate HTML report
+  -session-out-name string
+    	Dump Aquatone session to json filename (default "aquatone_session.json")
   -silent
     	Suppress all output except for errors
+  -similar
+    	Cluster page similarity (default true)
   -template-path string
     	Path to HTML template to use for report
   -threads int
     	Number of concurrent threads (default number of logical CPUs)
+  -use-remote-chrome
+    	Use remove chrome dev tools
   -version
     	Print current Aquatone version
+```
+   if use chrome docker, pass -use-remote-chrome to aquatone.
+```sh
+  aquatone -use-remote-chrome -chrome-dev-tools-url ws://localhost:3000
 ```
 
 ### Giving Aquatone data
